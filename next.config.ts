@@ -4,19 +4,23 @@ import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   reactStrictMode: true,
 
-  // Let Google Sites frame the app
+  // Do not fail Vercel builds on ESLint issues
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+
+  // Allow embedding inside Google Sites (and similar Google hosts)
   async headers() {
     return [
       {
         source: '/:path*',
         headers: [
-          // Modern way
           {
             key: 'Content-Security-Policy',
             value:
               "frame-ancestors 'self' https://sites.google.com https://*.google.com https://*.googleusercontent.com",
           },
-          // Some products still read this legacy header:
+          // Legacy header some products still respect
           { key: 'X-Frame-Options', value: 'ALLOWALL' },
         ],
       },

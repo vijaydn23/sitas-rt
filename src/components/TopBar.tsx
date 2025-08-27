@@ -1,4 +1,3 @@
-// D:\sitas-rt\src\components\TopBar.tsx
 'use client';
 
 import Image from 'next/image';

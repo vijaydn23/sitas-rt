@@ -1,4 +1,3 @@
-// D:\sitas-rt\src\components\EmbedAuthNotice.tsx
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
@@ -12,7 +11,6 @@ export default function EmbedAuthNotice() {
 
   const embed = useMemo(() => params?.get('embed') === '1', [params]);
 
-  // Get current full path with query (to return here after sign-in)
   const currentUrlPath = useMemo(() => {
     if (typeof window === 'undefined') return pathname || '/';
     const q = new URLSearchParams(params ?? undefined).toString();
@@ -29,10 +27,9 @@ export default function EmbedAuthNotice() {
   }, []);
 
   if (!embed) return null;
-  if (hasSession === null) return null; // still checking
-  if (hasSession) return null;          // already signed in
+  if (hasSession === null) return null;
+  if (hasSession) return null;
 
-  // Build absolute sign-in URL and force top window navigation (break iframe)
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
   const signInHref = `${origin}/auth/sign-in?redirect=${encodeURIComponent(currentUrlPath)}`;
 
@@ -40,21 +37,11 @@ export default function EmbedAuthNotice() {
     <div className="bg-yellow-50 border-b border-yellow-200">
       <div className="mx-auto max-w-7xl px-4 py-3 text-sm flex items-center justify-between gap-4">
         <div>
-          <b>Embedded mode:</b> To sign in, open the app in a new tab.
-          After login you’ll be returned to this page.
+          <b>Embedded mode:</b> To sign in, open the app in a new tab. After login you’ll be returned here.
         </div>
         <div className="flex gap-2">
-          <a
-            href={signInHref}
-            target="_top"
-            className="px-3 py-1.5 rounded bg-black text-white"
-          >
-            Open sign-in
-          </a>
-          <button
-            onClick={() => window.location.reload()}
-            className="px-3 py-1.5 rounded border"
-          >
+          <a href={signInHref} target="_top" className="px-3 py-1.5 rounded bg-black text-white">Open sign-in</a>
+          <button onClick={() => window.location.reload()} className="px-3 py-1.5 rounded border">
             I already signed in — Refresh
           </button>
         </div>

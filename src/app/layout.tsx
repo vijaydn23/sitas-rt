@@ -2,8 +2,7 @@
 import './globals.css';
 import type { Metadata } from 'next';
 
-// These two are Client Components (they have "use client" inside),
-// but it's OK to import them in a Server layout.
+// These are Client Components (with "use client") and can be imported in a Server layout:
 import TopBar from '@/components/TopBar';
 import EmbedAuthNotice from '@/components/EmbedAuthNotice';
 

@@ -1,11 +1,11 @@
 // D:\sitas-rt\src\app\layout.tsx
 import './globals.css';
 import type { Metadata } from 'next';
-import TopBar from '@/components/TopBar';
-import dynamic from 'next/dynamic';
 
-// Load client-only banner without affecting SSR
-const EmbedAuthNotice = dynamic(() => import('@/components/EmbedAuthNotice'), { ssr: false });
+// These two are Client Components (they have "use client" inside),
+// but it's OK to import them in a Server layout.
+import TopBar from '@/components/TopBar';
+import EmbedAuthNotice from '@/components/EmbedAuthNotice';
 
 export const metadata: Metadata = {
   title: 'SITAS NDT',
@@ -17,7 +17,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         <TopBar />
-        {/* Shows ONLY inside Google Sites (embed=1) when not authenticated */}
+        {/* Shows only when ?embed=1 and user is not signed in */}
         <EmbedAuthNotice />
         {children}
       </body>

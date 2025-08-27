@@ -1,136 +1,83 @@
-// D:\sitas-rt\src\app\auth\sign-in\page.tsx
 'use client';
-export const dynamic = 'force-dynamic';
 
-import { Suspense, useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
 
-/** Build where to go after login, preserving ?embed=1 if present */
-function buildNextTarget(nextParam: string | null, embed: boolean): string {
-  if (nextParam) {
-    try {
-      const u = new URL(nextParam, typeof window !== 'undefined' ? window.location.origin : 'http://localhost');
-      if (embed) u.searchParams.set('embed', '1');
-      return u.pathname + u.search + u.hash;
-    } catch {
-      let dest = nextParam;
-      if (embed && !dest.includes('embed=')) {
-        dest += (dest.includes('?') ? '&' : '?') + 'embed=1';
-      }
-      return dest;
-    }
-  }
-  return embed ? '/reports?embed=1' : '/dashboard';
-}
-
 function SignInInner() {
-  const router = useRouter();
-  const search = useSearchParams();
-
-  const isEmbed = search.get('embed') === '1';
-  const nextParam = search.get('next');
+  const params = useSearchParams();
+  const embed = params.get('embed') === '1';
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [err, setErr] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
-  // If already signed in, go forward
-  useEffect(() => {
-    (async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) router.replace(buildNextTarget(nextParam, isEmbed));
-    })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setErr(null);
-    setLoading(true);
-
+    setBusy(true);
+    setMsg(null);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
-
-    if (error) {
-      setErr(error.message);
-      return;
-    }
-    router.push(buildNextTarget(nextParam, isEmbed));
+    if (error) setMsg('❌ ' + error.message);
+    else setMsg('✅ Signed in — you can close this window or go to Home.');
+    setBusy(false);
   }
-
-  const signUpHref = `/auth/sign-up${isEmbed ? '?embed=1' : ''}`;
 
   return (
     <main className="min-h-screen flex items-center justify-center p-6">
-      <div className="w-full max-w-md border rounded-2xl p-6 shadow bg-white">
-        <h1 className="text-2xl font-semibold text-center">Sign in</h1>
-        <p className="text-sm text-gray-600 text-center mb-6">
-          SITAS-NDT portal {isEmbed && '(embedded)'}
-        </p>
+      <div className="p-8 rounded-2xl shadow border w-full max-w-md bg-white space-y-4">
+        {!embed && <h1 className="text-xl font-semibold text-center">Sign in</h1>}
 
-        <form onSubmit={onSubmit} className="space-y-4">
+        {msg && <div className="p-2 border rounded text-sm">{msg}</div>}
+
+        <form onSubmit={onSubmit} className="space-y-3">
           <div>
             <label className="block text-sm mb-1">Email</label>
             <input
+              className="border rounded p-2 w-full"
               type="email"
-              className="w-full border rounded p-2"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={e => setEmail(e.target.value)}
               required
-              autoComplete="email"
+              autoFocus
             />
           </div>
-
           <div>
             <label className="block text-sm mb-1">Password</label>
             <input
+              className="border rounded p-2 w-full"
               type="password"
-              className="w-full border rounded p-2"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={e => setPassword(e.target.value)}
               required
-              autoComplete="current-password"
             />
           </div>
 
-        {err && (
-          <div className="text-sm text-red-700 border border-red-300 rounded p-2">
-            {err}
-          </div>
-        )}
-
           <button
             type="submit"
-            disabled={loading}
-            className="w-full px-4 py-2 rounded bg-black text-white disabled:opacity-50"
+            disabled={busy}
+            className="w-full px-4 py-2 rounded bg-black text-white"
           >
-            {loading ? 'Signing in…' : 'Sign in'}
+            {busy ? 'Signing in…' : 'Sign in'}
           </button>
         </form>
 
-        <div className="text-sm mt-4 text-center">
-          Don’t have an account?{' '}
-          <Link className="underline" href={signUpHref}>Sign up</Link>
-        </div>
+        {!embed && (
+          <div className="text-center text-sm">
+            No account? <Link href="/auth/sign-up" className="underline">Sign up</Link>
+          </div>
+        )}
       </div>
     </main>
   );
 }
 
-export default function SignInPage() {
+export default function Page() {
+  // useSearchParams is in Suspense to make Next build happy
   return (
-    <Suspense fallback={
-      <main className="min-h-screen flex items-center justify-center p-6">
-        <div className="p-3 border rounded">Loading…</div>
-      </main>
-    }>
+    <Suspense fallback={<main className="min-h-screen flex items-center justify-center">Loading…</main>}>
       <SignInInner />
     </Suspense>
   );
 }
-
-/** Keep TS happy */
-export {};

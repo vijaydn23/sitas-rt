@@ -1,4 +1,3 @@
-// D:\sitas-rt\src\app\casting\[id]\page.tsx
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
@@ -10,18 +9,18 @@ import { fmtSeconds } from '@/lib/format';
 
 type Row = {
   Date: string;
-  'Castings Name': string;
-  'Heat No': string | null;
-  'RT No': string | null;
-  'Area Coverage': string | null;
+  "Castings Name": string;
+  "Heat No": string | null;
+  "RT No": string | null;
+  "Area Coverage": string | null;
   Source: 'Ir-192' | 'Co-60';
   Film: string;
   Technique: string;
   Thickness: number;
   SFD: number;
-  'Total Film': number;
-  'Total Exposure time': number;
-  'Total per casting time': number;
+  "Total Film": number;
+  "Total Exposure time": number;
+  "Total per casting time": number;
   casting_id: string;
   exposure_id: string;
   status: 'open' | 'completed';
@@ -30,10 +29,7 @@ type Row = {
 };
 
 export default function CastingPrintablePage() {
-  // handle both string and catch-all/array param
-  const params = useParams<{ id: string | string[] }>();
-  const id = Array.isArray(params?.id) ? params.id[0] : params?.id;
-
+  const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,7 +44,6 @@ export default function CastingPrintablePage() {
         .eq('casting_id', id)
         .order('Date', { ascending: true })
         .order('exposure_id', { ascending: true });
-
       if (error) setErr(error.message);
       else setRows((data ?? []) as Row[]);
       setLoading(false);
@@ -64,25 +59,22 @@ export default function CastingPrintablePage() {
   }, [rows]);
 
   return (
-    <RoleGate allow={['admin', 'site_incharge', 'customer']}>
+    <RoleGate allow={['admin','site_incharge','customer']}>
       <main className="min-h-screen p-6 print:p-0">
         <div className="mx-auto max-w-5xl bg-white print:bg-white">
           {/* Controls (hidden in print) */}
           <div className="flex items-center gap-3 mb-4 print:hidden">
-            <button onClick={() => router.back()} className="px-3 py-2 rounded border">
-              ⬅ Back
-            </button>
-            <Link href="/reports" className="px-3 py-2 rounded border">
-              Reports
-            </Link>
-            <button onClick={() => window.print()} className="px-3 py-2 rounded bg-black text-white">
-              🖨 Print / Save PDF
-            </button>
+            <button onClick={() => router.back()} className="px-3 py-2 rounded border">⬅ Back</button>
+            <Link href="/reports" className="px-3 py-2 rounded border">Reports</Link>
+            <button onClick={() => window.print()} className="px-3 py-2 rounded bg-black text-white">🖨 Print / Save PDF</button>
           </div>
 
-          {/* Title */}
+          {/* Title with logo */}
           <div className="text-center mb-4">
-            <div className="text-lg font-semibold">SITAS NDT ENGINEERS PVT LTD</div>
+            <div className="flex items-center justify-center gap-3 mb-1">
+              <img src="/logo.png" width={40} height={40} alt="SITAS-NDT" />
+              <div className="text-lg font-semibold">SITAS NDT ENGINEERS PVT LTD</div>
+            </div>
             <div className="text-sm text-gray-600">Casting Exposure Report</div>
           </div>
 
@@ -92,27 +84,13 @@ export default function CastingPrintablePage() {
             {err && <div className="text-red-700">❌ {err}</div>}
             {!loading && !err && header && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                <div>
-                  <b>Date:</b> {header['Date']}
-                </div>
-                <div>
-                  <b>Status:</b> {header.status}
-                </div>
-                <div>
-                  <b>Customer:</b> {header.customer_name}
-                </div>
-                <div>
-                  <b>Casting Name:</b> {header['Castings Name']}
-                </div>
-                <div>
-                  <b>Heat No:</b> {header['Heat No'] ?? '—'}
-                </div>
-                <div>
-                  <b>RT No:</b> {header['RT No'] ?? '—'}
-                </div>
-                <div className="md:col-span-2">
-                  <b>Area Coverage:</b> {header['Area Coverage'] ?? '—'}
-                </div>
+                <div><b>Date:</b> {header['Date']}</div>
+                <div><b>Status:</b> {header.status}</div>
+                <div><b>Customer:</b> {header.customer_name}</div>
+                <div><b>Casting Name:</b> {header['Castings Name']}</div>
+                <div><b>Heat No:</b> {header['Heat No'] ?? '—'}</div>
+                <div><b>RT No:</b> {header['RT No'] ?? '—'}</div>
+                <div className="md:col-span-2"><b>Area Coverage:</b> {header['Area Coverage'] ?? '—'}</div>
               </div>
             )}
             {!loading && !err && !header && <div>No data for this casting.</div>}
@@ -151,9 +129,7 @@ export default function CastingPrintablePage() {
                   </tbody>
                   <tfoot>
                     <tr className="border-t font-semibold">
-                      <td className="p-2" colSpan={6}>
-                        Totals
-                      </td>
+                      <td className="p-2" colSpan={6}>Totals</td>
                       <td className="p-2 text-right">{fmtSeconds(totals.totalExposure)}</td>
                       <td className="p-2 text-right">{fmtSeconds(totals.totalPerCasting)}</td>
                     </tr>

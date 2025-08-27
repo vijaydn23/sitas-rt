@@ -1,32 +1,43 @@
-// D:\sitas-rt\src\components\RoleGate.tsx
 'use client';
 
+import { ReactNode } from 'react';
 import Link from 'next/link';
 import { useSessionProfile } from '@/lib/useSessionProfile';
 
-// Keep type for reference, but we accept string[] to avoid TS errors in pages
 type Role = 'admin' | 'site_incharge' | 'customer';
 
 export default function RoleGate({
   allow,
   children,
 }: {
-  // accept Role or string to be flexible in pages
-  allow: Array<Role | string>;
-  children: React.ReactNode;
+  allow: Role[];
+  children: ReactNode;
 }) {
-  const { profile, loading } = useSessionProfile();
+  const { loading, profile } = useSessionProfile();
 
   if (loading) {
-    return <div className="p-3 border rounded inline-block">Loading…</div>;
+    return <main className="min-h-screen flex items-center justify-center"><div className="p-3 border rounded">Loading…</div></main>;
   }
 
-  if (!profile || !allow.includes(profile.role)) {
+  if (!profile) {
     return (
-      <div className="p-4 border rounded">
-        <div className="mb-2">You don’t have access to this page.</div>
-        <Link href="/" className="underline">Go home</Link>
-      </div>
+      <main className="min-h-screen flex items-center justify-center">
+        <div className="p-8 rounded-2xl border bg-white text-center space-y-3">
+          <div className="text-lg font-semibold">Please sign in</div>
+          <Link href="/auth/sign-in" className="px-4 py-2 rounded bg-black text-white">Sign in</Link>
+        </div>
+      </main>
+    );
+  }
+
+  if (!allow.includes(profile.role)) {
+    return (
+      <main className="min-h-screen flex items-center justify-center">
+        <div className="p-8 rounded-2xl border bg-white text-center">
+          <div className="font-semibold mb-2">No access</div>
+          <div className="text-sm text-gray-600">Your role is <b>{profile.role}</b>.</div>
+        </div>
+      </main>
     );
   }
 

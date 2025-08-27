@@ -1,50 +1,69 @@
+// D:\sitas-rt\src\app\auth\sign-up\page.tsx
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
 
-export default function SignUpPage() {
-  const [fullName, setFullName] = useState('');
+function SignUpInner() {
+  const params = useSearchParams();
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
   const [msg, setMsg] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const redirect = params?.get('redirect') || '/dashboard';
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setMsg(null);
-    setLoading(true);
-
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
+    const { data, error } = await supabase.auth.signUp({
+      email, password,
       options: { data: { full_name: fullName } }
     });
-
-    setLoading(false);
-    if (error) setMsg('❌ ' + error.message);
-    else setMsg('✅ Account created. If email confirmation is required, check your inbox. You can now sign in.');
+    if (error) { setMsg('❌ ' + error.message); return; }
+    if (data.user) router.replace(redirect);
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center">
-      <div className="p-8 rounded-2xl shadow border w-full max-w-md">
-        <h1 className="text-2xl font-semibold mb-6">Create account</h1>
-        <form onSubmit={onSubmit} className="space-y-4">
-          <input className="w-full border rounded p-2" type="text" placeholder="Full name"
-                 value={fullName} onChange={e=>setFullName(e.target.value)} required />
-          <input className="w-full border rounded p-2" type="email" placeholder="Email"
-                 value={email} onChange={e=>setEmail(e.target.value)} required />
-          <input className="w-full border rounded p-2" type="password" placeholder="Password (min 6 chars)"
-                 value={password} onChange={e=>setPassword(e.target.value)} required />
-          <button type="submit" disabled={loading} className="w-full p-2 rounded bg-black text-white">
-            {loading ? 'Creating…' : 'Sign up'}
-          </button>
+    <main className="min-h-screen flex items-center justify-center p-6">
+      <div className="p-8 rounded-2xl border w-full max-w-md space-y-4">
+        <h1 className="text-xl font-semibold">Create account</h1>
+        {msg && <div className="p-3 border rounded text-sm">{msg}</div>}
+
+        <form onSubmit={onSubmit} className="space-y-3">
+          <div>
+            <label className="block text-sm mb-1">Full name</label>
+            <input className="border rounded p-2 w-full"
+                   value={fullName} onChange={e=>setFullName(e.target.value)} />
+          </div>
+          <div>
+            <label className="block text-sm mb-1">Email</label>
+            <input type="email" className="border rounded p-2 w-full"
+                   value={email} onChange={e=>setEmail(e.target.value)} required />
+          </div>
+          <div>
+            <label className="block text-sm mb-1">Password</label>
+            <input type="password" className="border rounded p-2 w-full"
+                   value={password} onChange={e=>setPassword(e.target.value)} required />
+          </div>
+          <button className="px-4 py-2 rounded bg-black text-white w-full">Sign up</button>
         </form>
-        {msg && <p className="mt-4 text-sm">{msg}</p>}
-        <p className="mt-6 text-sm">Already have an account? <Link className="underline" href="/auth/sign-in">Sign in</Link></p>
+
+        <div className="text-sm flex justify-between">
+          <Link href={`/auth/sign-in?redirect=${encodeURIComponent(redirect)}`} className="underline">Already have an account?</Link>
+          <Link href="/logout" className="underline">Sign out</Link>
+        </div>
       </div>
     </main>
+  );
+}
+
+export default function SignUpPage() {
+  return (
+    <Suspense fallback={<div className="p-6">Loading…</div>}>
+      <SignUpInner />
+    </Suspense>
   );
 }

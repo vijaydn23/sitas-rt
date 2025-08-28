@@ -1,23 +1,23 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 
 export default function LogoutPage() {
-  const [msg, setMsg] = useState('Signing out...');
+  const router = useRouter();
 
   useEffect(() => {
-    const go = async () => {
-      await supabase.auth.signOut();
-      setMsg('Signed out.');
-      window.location.href = '/auth/sign-in';
-    };
-    void go();
-  }, []);
+    (async () => {
+      // ignore errors; we just want the session cleared
+      try { await supabase.auth.signOut(); } catch {}
+      router.replace('/'); // go to home (or change to '/auth/sign-in')
+    })();
+  }, [router]);
 
   return (
-    <main className="min-h-screen flex items-center justify-center">
-      <div className="p-6 rounded-2xl shadow border">{msg}</div>
+    <main className="min-h-screen p-8">
+      <div className="mx-auto max-w-xl text-center">Signing out…</div>
     </main>
   );
 }

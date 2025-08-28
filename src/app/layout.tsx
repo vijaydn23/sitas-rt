@@ -1,8 +1,9 @@
 // D:\sitas-rt\src\app\layout.tsx
 import './globals.css';
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 
-// Import client components directly (they have "use client" in their files)
+// These are client components (they include "use client" at the top)
 import TopBar from '@/components/TopBar';
 import EmbedAuthNotice from '@/components/EmbedAuthNotice';
 
@@ -15,9 +16,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
-        <TopBar />
-        {/* Shows only when ?embed=1 and user is not signed in */}
-        <EmbedAuthNotice />
+        {/* Anything that calls useSearchParams() must live inside Suspense */}
+        <Suspense fallback={null}>
+          <TopBar />
+          <EmbedAuthNotice />
+        </Suspense>
         {children}
       </body>
     </html>

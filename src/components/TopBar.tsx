@@ -7,7 +7,7 @@ import { useSessionProfile } from '@/lib/useSessionProfile';
 
 export default function TopBar() {
   const search = useSearchParams();
-  const embed = search?.get('embed') === '1'; // hide header in embed mode
+  const embed = search?.get('embed') === '1';
   const { profile } = useSessionProfile();
 
   if (embed) return null;
@@ -16,13 +16,7 @@ export default function TopBar() {
     <header className="border-b bg-white">
       <div className="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between gap-4">
         <Link href="/" className="flex items-center gap-3">
-          <Image
-            src="/sitas-logo.png"
-            alt="SITAS NDT"
-            width={36}
-            height={36}
-            priority
-          />
+          <Image src="/sitas-logo.png" alt="SITAS NDT" width={36} height={36} priority />
           <span className="font-semibold">SITAS NDT</span>
         </Link>
 

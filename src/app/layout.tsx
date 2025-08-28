@@ -3,7 +3,7 @@ import './globals.css';
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 
-// These are client components (they include "use client" at the top)
+// Client components (they use "use client" internally)
 import TopBar from '@/components/TopBar';
 import EmbedAuthNotice from '@/components/EmbedAuthNotice';
 
@@ -16,7 +16,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
-        {/* Anything that calls useSearchParams() must live inside Suspense */}
+        {/* IMPORTANT: wrap any component that uses useSearchParams in Suspense */}
         <Suspense fallback={null}>
           <TopBar />
           <EmbedAuthNotice />

@@ -1,44 +1,42 @@
 'use client';
 
 import { ReactNode } from 'react';
-import Link from 'next/link';
-import { useSessionProfile } from '@/lib/useSessionProfile';
+import { useSession } from 'next-auth/react';
 
-type Role = 'admin' | 'site_incharge' | 'customer';
+export type AppRole = 'ADMIN' | 'INCHARGE' | 'CUSTOMER';
+type AllowedRole = AppRole | Lowercase<AppRole>;
+
+function toAppRole(val?: string | null): AppRole | null {
+  if (!val) return null;
+  const u = val.toUpperCase();
+  if (u === 'ADMIN' || u === 'INCHARGE' || u === 'CUSTOMER') return u as AppRole;
+  return null;
+}
 
 export default function RoleGate({
   allow,
   children,
+  fallback,
 }: {
-  allow: Role[];
+  allow?: AllowedRole[];          // accepts 'ADMIN' or 'admin'
   children: ReactNode;
+  fallback?: ReactNode;
 }) {
-  const { loading, profile } = useSessionProfile();
+  const { data: session, status } = useSession();
 
-  if (loading) {
-    return <main className="min-h-screen flex items-center justify-center"><div className="p-3 border rounded">Loading…</div></main>;
-  }
+  if (status === 'loading') return null;
 
-  if (!profile) {
-    return (
-      <main className="min-h-screen flex items-center justify-center">
-        <div className="p-8 rounded-2xl border bg-white text-center space-y-3">
-          <div className="text-lg font-semibold">Please sign in</div>
-          <Link href="/auth/sign-in" className="px-4 py-2 rounded bg-black text-white">Sign in</Link>
-        </div>
-      </main>
-    );
-  }
+  const roleFromSession = (session?.user as any)?.role as string | undefined;
+  const myRole = toAppRole(roleFromSession);
 
-  if (!allow.includes(profile.role)) {
-    return (
-      <main className="min-h-screen flex items-center justify-center">
-        <div className="p-8 rounded-2xl border bg-white text-center">
-          <div className="font-semibold mb-2">No access</div>
-          <div className="text-sm text-gray-600">Your role is <b>{profile.role}</b>.</div>
-        </div>
-      </main>
-    );
+  // if not provided, allow everyone who has a valid role
+  const allowedNormalized: AppRole[] =
+    (allow && allow.length > 0
+      ? allow.map(r => toAppRole(String(r))!).filter(Boolean) as AppRole[]
+      : (['ADMIN', 'INCHARGE', 'CUSTOMER'] as AppRole[]));
+
+  if (!myRole || !allowedNormalized.includes(myRole)) {
+    return <>{fallback ?? <div className="p-3 border rounded">Not authorized.</div>}</>;
   }
 
   return <>{children}</>;

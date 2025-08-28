@@ -56,8 +56,9 @@ export default function ChartPage() {
   }
 
   return (
-    <RoleGate allow={['admin']}>
-      <main className="min-h-screen p-6">
+   
+  <RoleGate allow={['ADMIN']}>
+    <main className="min-h-screen p-6">
         <div className="mx-auto max-w-6xl">
           <h1 className="text-2xl font-semibold mb-4">Exposure Chart</h1>
           {err && <div className="p-3 border rounded text-sm mb-3">❌ {err}</div>}

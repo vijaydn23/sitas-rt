@@ -1,11 +1,7 @@
-// D:\sitas-rt\src\app\layout.tsx
 import './globals.css';
 import type { Metadata } from 'next';
-import { Suspense } from 'react';
-
-// Client components (they use "use client" internally)
+import Providers from '@/components/Providers';
 import TopBar from '@/components/TopBar';
-import EmbedAuthNotice from '@/components/EmbedAuthNotice';
 
 export const metadata: Metadata = {
   title: 'SITAS NDT',
@@ -16,12 +12,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
-        {/* IMPORTANT: wrap any component that uses useSearchParams in Suspense */}
-        <Suspense fallback={null}>
+        <Providers>
           <TopBar />
-          <EmbedAuthNotice />
-        </Suspense>
-        {children}
+          {children}
+        </Providers>
       </body>
     </html>
   );

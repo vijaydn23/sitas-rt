@@ -31,6 +31,10 @@ body {
 @media print {
   body { background: #fff !important; }
   a { text-decoration: none !important; color: #000 !important; }
+
+  * { box-sizing: border-box; }
+body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial; }
+
 }
 
 /* You can add component classes below as needed */

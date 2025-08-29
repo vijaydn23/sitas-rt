@@ -1,16 +1,15 @@
-// D:\sitas-rt\src\app\admin\map\page.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
 import RoleGate from '@/components/RoleGate';
 import { supabase } from '@/lib/supabaseClient';
 
-type Profile = { id: string; email: string; full_name: string | null; role: 'admin'|'site_incharge'|'customer' };
+type Incharge = { id: string; email: string; full_name: string | null };
 type Customer = { id: string; name: string; code: string | null };
 type Mapping = { id: string; profile_id: string; customer_id: string; email: string; customer_name: string };
 
 export default function MapPage() {
-  const [incharges, setIncharges] = useState<Profile[]>([]);
+  const [incharges, setIncharges] = useState<Incharge[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [mappings, setMappings] = useState<Mapping[]>([]);
   const [selIncharge, setSelIncharge] = useState('');
@@ -20,48 +19,73 @@ export default function MapPage() {
 
   async function loadAll() {
     setLoading(true);
+
     const [p, c, m] = await Promise.all([
-      supabase.from('profiles').select('id, email, full_name, role').eq('role', 'site_incharge'),
+      // NOTE: if your DB stores roles as 'site_incharge', keep it.
+      supabase
+        .from('profiles')
+        .select('id, email, full_name, role')
+        .eq('role', 'site_incharge'),
       supabase.from('customers').select('id, name, code').order('name', { ascending: true }),
       supabase
         .from('site_incharge_customers')
-        .select('id, profile_id, customer_id, profiles!inner(email), customers!inner(name)')
+        .select('id, profile_id, customer_id, profiles!inner(email), customers!inner(name)'),
     ]);
 
-    if (p.error) setErr(p.error.message); else setIncharges((p.data ?? []) as Profile[]);
-    if (c.error) setErr(c.error.message); else setCustomers((c.data ?? []) as Customer[]);
+    if (p.error) setErr(p.error.message);
+    else {
+      const rows = (p.data ?? []).map((r: any) => ({
+        id: r.id as string,
+        email: r.email as string,
+        full_name: (r.full_name as string | null) ?? null,
+      }));
+      setIncharges(rows);
+    }
+
+    if (c.error) setErr(c.error.message);
+    else setCustomers(((c.data ?? []) as Customer[]) || []);
+
     if (m.error) setErr(m.error.message);
     else {
-      const rows = (m.data ?? []) as any[];
-      setMappings(rows.map(r => ({
-        id: r.id,
-        profile_id: r.profile_id,
-        customer_id: r.customer_id,
-        email: r.profiles.email,
-        customer_name: r.customers.name,
-      } as Mapping)));
+      const rows: Mapping[] = (m.data ?? []).map((r: any) => ({
+        id: r.id as string,
+        profile_id: r.profile_id as string,
+        customer_id: r.customer_id as string,
+        email: r.profiles.email as string,
+        customer_name: r.customers.name as string,
+      }));
+      setMappings(rows);
     }
+
     setLoading(false);
   }
 
-  useEffect(() => { loadAll(); }, []);
+  useEffect(() => {
+    void loadAll();
+  }, []);
 
   async function addMapping() {
     setErr(null);
-    if (!selIncharge || !selCustomer) { setErr('Select both Site Incharge and Customer'); return; }
+    if (!selIncharge || !selCustomer) {
+      setErr('Select both Site Incharge and Customer');
+      return;
+    }
     const { error } = await supabase
       .from('site_incharge_customers')
       .insert([{ profile_id: selIncharge, customer_id: selCustomer }]);
-    if (error) setErr(error.message); else await loadAll();
+
+    if (error) setErr(error.message);
+    else await loadAll();
   }
 
   async function deleteMapping(id: string) {
     const { error } = await supabase.from('site_incharge_customers').delete().eq('id', id);
-    if (error) setErr(error.message); else await loadAll();
+    if (error) setErr(error.message);
+    else await loadAll();
   }
 
   return (
-    <RoleGate allow={['admin']}>
+    <RoleGate allow={['ADMIN']}>
       <main className="min-h-screen p-6">
         <div className="mx-auto max-w-6xl">
           <h1 className="text-2xl font-semibold mb-4">Map Site Incharge ↔ Customers</h1>
@@ -70,20 +94,39 @@ export default function MapPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
             <div>
               <label className="block text-sm mb-1">Site Incharge</label>
-              <select className="border rounded p-2 w-full" value={selIncharge} onChange={e=>setSelIncharge(e.target.value)}>
+              <select
+                className="border rounded p-2 w-full"
+                value={selIncharge}
+                onChange={(e) => setSelIncharge(e.target.value)}
+              >
                 <option value="">-- select --</option>
-                {incharges.map(i => <option key={i.id} value={i.id}>{i.full_name || i.email} ({i.email})</option>)}
+                {incharges.map((i) => (
+                  <option key={i.id} value={i.id}>
+                    {i.full_name || i.email} ({i.email})
+                  </option>
+                ))}
               </select>
             </div>
             <div>
               <label className="block text-sm mb-1">Customer</label>
-              <select className="border rounded p-2 w-full" value={selCustomer} onChange={e=>setSelCustomer(e.target.value)}>
+              <select
+                className="border rounded p-2 w-full"
+                value={selCustomer}
+                onChange={(e) => setSelCustomer(e.target.value)}
+              >
                 <option value="">-- select --</option>
-                {customers.map(c => <option key={c.id} value={c.id}>{c.name}{c.code ? ` (${c.code})` : ''}</option>)}
+                {customers.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                    {c.code ? ` (${c.code})` : ''}
+                  </option>
+                ))}
               </select>
             </div>
             <div className="flex items-end">
-              <button onClick={addMapping} className="px-4 py-2 rounded bg-black text-white">Add mapping</button>
+              <button onClick={addMapping} className="px-4 py-2 rounded bg-black text-white">
+                Add mapping
+              </button>
             </div>
           </div>
 
@@ -100,17 +143,26 @@ export default function MapPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {mappings.map(m => (
+                  {mappings.map((m) => (
                     <tr key={m.id} className="border-t">
                       <td className="p-2">{m.email}</td>
                       <td className="p-2">{m.customer_name}</td>
                       <td className="p-2">
-                        <button onClick={()=>deleteMapping(m.id)} className="px-3 py-1 rounded border">Delete</button>
+                        <button
+                          onClick={() => deleteMapping(m.id)}
+                          className="px-3 py-1 rounded border"
+                        >
+                          Delete
+                        </button>
                       </td>
                     </tr>
                   ))}
                   {mappings.length === 0 && (
-                    <tr><td className="p-2 text-gray-500" colSpan={3}>No mappings yet.</td></tr>
+                    <tr>
+                      <td className="p-2 text-gray-500" colSpan={3}>
+                        No mappings yet.
+                      </td>
+                    </tr>
                   )}
                 </tbody>
               </table>
@@ -121,3 +173,5 @@ export default function MapPage() {
     </RoleGate>
   );
 }
+
+

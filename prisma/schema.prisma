@@ -1,0 +1,54 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  // POOLED connection (host has -pooler)
+  url       = env("DATABASE_URL")
+  // DIRECT connection (same host but without -pooler)
+  directUrl = env("DIRECT_DATABASE_URL")
+}
+
+model User {
+  id           String             @id @default(cuid())
+  email        String             @unique
+  name         String?
+  passwordHash String
+  role         Role               @default(CUSTOMER)
+  customers    Customer[]         @relation("CustomerOwner")
+  // Added the new relation field to link back to InchargeCustomer
+  inchargeCustomers InchargeCustomer[]
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+}
+
+model Customer {
+  id                 String             @id @default(cuid())
+  name               String
+  code               String?
+  ownerId            String
+  owner              User               @relation("CustomerOwner", fields: [ownerId], references: [id])
+  // Added the new relation field to link back to InchargeCustomer
+  inchargeCustomers  InchargeCustomer[]
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+}
+
+model InchargeCustomer {
+  inchargeId String
+  customerId String
+  // This is the relation to User, which now has a back-reference
+  incharge   User      @relation(fields: [inchargeId], references: [id])
+  // This is the relation to Customer, which now has a back-reference
+  customer   Customer  @relation(fields: [customerId], references: [id])
+
+  @@id([inchargeId, customerId])
+}
+
+enum Role {
+  ADMIN
+  INCHARGE
+  CUSTOMER
+}

@@ -1,11 +1,6 @@
-﻿{
+﻿// .eslintrc.json
+{
   "root": true,
   "extends": ["next/core-web-vitals", "plugin:@typescript-eslint/recommended"],
-  "parserOptions": {
-    "ecmaVersion": 2022,
-    "sourceType": "module"
-  },
-  "rules": {
-    "@typescript-eslint/no-explicit-any": "off"
-  }
+  "rules": { "@typescript-eslint/no-explicit-any": "off" }
 }

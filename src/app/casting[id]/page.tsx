@@ -1,3 +1,4 @@
+// D:\sitas-rt\src\app\casting[id]\page.tsx
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
@@ -9,18 +10,18 @@ import { fmtSeconds } from '@/lib/format';
 
 type Row = {
   Date: string;
-  "Castings Name": string;
-  "Heat No": string | null;
-  "RT No": string | null;
-  "Area Coverage": string | null;
+  'Castings Name': string;
+  'Heat No': string | null;
+  'RT No': string | null;
+  'Area Coverage': string | null;
   Source: 'Ir-192' | 'Co-60';
   Film: string;
   Technique: string;
   Thickness: number;
   SFD: number;
-  "Total Film": number;
-  "Total Exposure time": number;
-  "Total per casting time": number;
+  'Total Film': number;
+  'Total Exposure time': number;
+  'Total per casting time': number;
   casting_id: string;
   exposure_id: string;
   status: 'open' | 'completed';
@@ -44,6 +45,7 @@ export default function CastingPrintablePage() {
         .eq('casting_id', id)
         .order('Date', { ascending: true })
         .order('exposure_id', { ascending: true });
+
       if (error) setErr(error.message);
       else setRows((data ?? []) as Row[]);
       setLoading(false);
@@ -59,7 +61,7 @@ export default function CastingPrintablePage() {
   }, [rows]);
 
   return (
-    <RoleGate allow={['admin','site_incharge','customer']}>
+    <RoleGate allow={['ADMIN', 'INCHARGE', 'CUSTOMER']}>
       <main className="min-h-screen p-6 print:p-0">
         <div className="mx-auto max-w-5xl bg-white print:bg-white">
           {/* Controls (hidden in print) */}
@@ -69,12 +71,9 @@ export default function CastingPrintablePage() {
             <button onClick={() => window.print()} className="px-3 py-2 rounded bg-black text-white">🖨 Print / Save PDF</button>
           </div>
 
-          {/* Title with logo */}
+          {/* Title */}
           <div className="text-center mb-4">
-            <div className="flex items-center justify-center gap-3 mb-1">
-              <img src="/logo.png" width={40} height={40} alt="SITAS-NDT" />
-              <div className="text-lg font-semibold">SITAS NDT ENGINEERS PVT LTD</div>
-            </div>
+            <div className="text-lg font-semibold">SITAS NDT ENGINEERS PVT LTD</div>
             <div className="text-sm text-gray-600">Casting Exposure Report</div>
           </div>
 
@@ -146,3 +145,4 @@ export default function CastingPrintablePage() {
     </RoleGate>
   );
 }
+

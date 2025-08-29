@@ -76,7 +76,7 @@ export default function CustomerAccountsPage() {
   const availableProfiles = profiles.filter(p => !p.customer_id); // unlinked only for the "Add link" dropdown
 
   return (
-    <RoleGate allow={['admin']}>
+    <RoleGate allow={['ADMIN']}>
       <main className="min-h-screen p-6">
         <div className="mx-auto max-w-6xl space-y-8">
           <h1 className="text-2xl font-semibold">Customer Accounts</h1>
@@ -155,3 +155,5 @@ export default function CustomerAccountsPage() {
     </RoleGate>
   );
 }
+
+

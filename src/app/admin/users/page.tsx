@@ -35,7 +35,7 @@ export default function UsersPage() {
   }
 
   return (
-    <RoleGate allow={['admin']}>
+    <RoleGate allow={['ADMIN']}>
       <main className="min-h-screen p-6">
         <div className="mx-auto max-w-6xl">
           <h1 className="text-2xl font-semibold mb-4">Users & Roles</h1>
@@ -83,3 +83,5 @@ export default function UsersPage() {
     </RoleGate>
   );
 }
+
+

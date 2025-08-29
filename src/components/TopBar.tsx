@@ -1,32 +1,25 @@
 'use client';
-
 import Link from 'next/link';
-import Image from 'next/image';
-import { useSearchParams } from 'next/navigation';
-import { useSessionProfile } from '@/lib/useSessionProfile';
+import { useSession, signOut } from 'next-auth/react';
 
 export default function TopBar() {
-  const search = useSearchParams();
-  const embed = search?.get('embed') === '1';
-  const { profile } = useSessionProfile();
-
-  if (embed) return null;
+  const { data } = useSession();
+  const role = (data?.user as any)?.role;
 
   return (
-    <header className="border-b bg-white">
-      <div className="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between gap-4">
-        <Link href="/" className="flex items-center gap-3">
-          <Image src="/sitas-logo.png" alt="SITAS NDT" width={36} height={36} priority />
-          <span className="font-semibold">SITAS NDT</span>
-        </Link>
-
-        <nav className="flex items-center gap-3 text-sm">
-          <Link href="/reports" className="underline">Reports</Link>
-          {profile?.role !== 'customer' && <Link href="/entry" className="underline">Entry</Link>}
-          {profile?.role === 'admin' && <Link href="/admin" className="underline">Admin</Link>}
-          {!profile && <Link href="/auth/sign-in" className="px-3 py-1 rounded border">Sign in</Link>}
-          {profile && <Link href="/logout" className="px-3 py-1 rounded border">Sign out</Link>}
-        </nav>
+    <header className="p-4 border-b flex items-center justify-between">
+      <Link href="/" className="font-semibold">SITAS-NDT</Link>
+      <div className="space-x-3">
+        {!data?.user ? (
+          <Link href="/auth/sign-in" className="px-3 py-1 border rounded">Sign in</Link>
+        ) : (
+          <>
+            {role === 'ADMIN' && <Link href="/admin" className="px-3 py-1 border rounded">Admin</Link>}
+            {role === 'INCHARGE' && <Link href="/entry" className="px-3 py-1 border rounded">Entry</Link>}
+            {role === 'CUSTOMER' && <Link href="/reports" className="px-3 py-1 border rounded">Reports</Link>}
+            <button onClick={() => signOut({ callbackUrl: '/' })} className="px-3 py-1 border rounded">Sign out</button>
+          </>
+        )}
       </div>
     </header>
   );

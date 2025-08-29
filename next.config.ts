@@ -1,10 +1,9 @@
+// next.config.ts
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+  eslint: { ignoreDuringBuilds: true },
   async headers() {
     return [
       {
@@ -15,7 +14,6 @@ const nextConfig: NextConfig = {
             value:
               "frame-ancestors 'self' https://sites.google.com https://*.google.com https://*.googleusercontent.com",
           },
-          // Legacy
           { key: 'X-Frame-Options', value: 'ALLOWALL' },
         ],
       },
